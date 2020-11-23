@@ -3,8 +3,8 @@ import sys
 import requests
 
 auth_params = {
-    'key': 'd85df1f9b2cf5270e14c26546bb86e08',
-    'token': 'f4d461a88735a8125321e99a7d09e8969fb3ce4173a09d63842f5a80931356c1'
+    'key': '',
+    'token': ''
 }
 
 base_url = 'https://trello.com/1/{}'
