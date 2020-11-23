@@ -3,23 +3,22 @@ import sys
 import requests
 
 auth_params = {
-    'key': 'd85df1f9b2cf5270e14c26546bb86e08',
-    'token': 'f4d461a88735a8125321e99a7d09e8969fb3ce4173a09d63842f5a80931356c1'
+    'key': '', #введите совой ключ разработчика 
+    'token': '' #введите свой токен
 }
 
 base_url = 'https://trello.com/1/{}'
-board_id = 'Bwnvs8UF'
+board_id = '' #введите id доски
 
-def column_check(column_name):
-    column_id = None
-    column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
-    for column in column_data:
-        if column['name'] == column_name:
-            column_id = column['id']
+def column_check(column_name):  
+    column_id = None  
+    column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()  
+    for column in column_data:  
+        if column['name'] == column_name:  
+            column_id = column['id']  
             return column_id
         
 def getDublicate(task_name):
-
     column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
     dublicate_tasks = []
     for column in column_data:
@@ -35,60 +34,48 @@ def counterTasks():
     for column in column_data:
         task_data = requests.get(base_url.format('lists') + '/' + column['id'] + '/cards', params=auth_params).json()
         counter_tasks[column['id']] = len(task_data)
-    return counter_tasks
+    return counter_tasks    
 
-#Создание новой колонки
-def createColumn(new_colomn_name):
-    column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
-    for column in column_data:
-        if column['name'] == new_colomn_name:
-            print('Колонка с ткаим именем уже существует')
-            return
-    requests.post(base_url.format('boards') + '/' + board_id + '/lists', data={'name': new_colomn_name, **auth_params})
+#Чтение всех колонок и задач
+def read():      
+    column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()      
+    counter_tasks = counterTasks()
+    for column in column_data:      
+        print(str(counter_tasks[column['id']])+' '+ column['name'])    
+        task_data = requests.get(base_url.format('lists') + '/' + column['id'] + '/cards', params=auth_params).json()      
+        if not task_data:      
+            print('\t' + 'Нет задач!')      
+            continue      
+        for task in task_data:      
+            print('\t' + task['name'] + " id задачи: " + task['id'])    
 
-#Чтение данных всех колонки
-def read():
-    column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
-    for column in column_data:
-        task_data = requests.get(base_url.format('lists') + '/' + column['id'] + '/cards', params=auth_params).json()
-        counter = len(task_data)
-        print(column['name'], f'(количество задач: {counter})')
-        if not task_data:
-            print('\t' + 'Нет задач!')
-            continue
-        for task in task_data:
-            print('\t' + task['name'])
+#Создание задачи
+def createCard(name, column_name):      
+    column_id = column_check(column_name)
+    if column_id is None:
+        column_id = create_column(column_name)['id']
+    requests.post(base_url.format('cards'), data={'name': name, 'idList': column_id, **auth_params})
 
+#Создание колонки
+def createColumn(column_name):            
+    return requests.post(base_url.format('lists'), data={'name': column_name, 'idBoard': board_id, **auth_params}).json() 
 
-#Создание карточки
-def createCard(name, column_name):
-    column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
-    for column in column_data:
-        if column['name'] == column_name:
-            print(column)
-            requests.post(base_url.format('cards'), data={'name':name, 'idList':column['id'], **auth_params})
-
-
-
-#Премещение карточки
-def move(name, column_name):
-    column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
-    task_id = None
-    for column in column_data:
-        column_tasks = requests.get(base_url.format('lists') + '/' + column['id'] + '/cards', params=auth_params).json()
-        for task in column_tasks:
-            if task['name'] == name:
-                task_id = task['id']
-                break
-            if task_id:
-                break
-
-    for column in column_data:
-        if column['name'] == column_name:
-            # и выполним запрос к API для перемещения задачи в нужную колонку
-            requests.put(base_url.format('cards') + '/' + task_id + '/idList', data={'value': column['id'], **auth_params})
-            break
-
+#Премещение задачи
+def move(name, column_name): 
+    dublicate_tasks = getDublicate(name)   
+    if len(dublicate_tasks) > 1:  
+        print("Задач с таким названием несколько:")  
+        for task in dublicate_tasks:  
+            task_column_name = requests.get(base_url.format('lists') + '/' + task['idList'], params=auth_params).json()['name']  
+            print("задача с id: {}\tНаходится в колонке: {}\t ".format(task['id'], task_column_name))  
+        task_id = input("Пожалуйста, введите ID задачи, которую нужно переместить: ")  
+    else:  
+        task_id = duplicate_tasks[0]['id']        
+    column_id = column_check(column_name)
+    if column_id is None:
+        column_id = create_column(column_name)['id']    
+    requests.put(base_url.format('cards') + '/' + task_id + '/idList', data={'value': column_id, **auth_params})
+  
 
 if __name__ == "__main__":
     if len(sys.argv) <= 2:
