@@ -51,7 +51,7 @@ def read():
 
 #Создание задачи
 def createCard(name, column_name):      
-    column_id = column_check(column_name)
+    column_id = createColumn(column_name)
     if column_id is None:
         column_id = createColumn(column_name)['id']
     requests.post(base_url.format('cards'), data={'name': name, 'idList': column_id, **auth_params})
@@ -70,10 +70,10 @@ def move(name, column_name):
             print("задача с id: {}\tНаходится в колонке: {}\t ".format(task['id'], task_column_name))  
         task_id = input("Пожалуйста, введите ID задачи, которую нужно переместить: ")  
     else:  
-        task_id = duplicate_tasks[0]['id']        
+        task_id = dublicate_tasks[0]['id']        
     column_id = column_check(column_name)
     if column_id is None:
-        column_id = create_column(column_name)['id']    
+        column_id = createColumn(column_name)['id']    
     requests.put(base_url.format('cards') + '/' + task_id + '/idList', data={'value': column_id, **auth_params})
   
 
