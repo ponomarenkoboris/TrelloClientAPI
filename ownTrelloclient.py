@@ -3,12 +3,39 @@ import sys
 import requests
 
 auth_params = {
-    'key': '',
-    'token': ''
+    'key': 'd85df1f9b2cf5270e14c26546bb86e08',
+    'token': 'f4d461a88735a8125321e99a7d09e8969fb3ce4173a09d63842f5a80931356c1'
 }
 
 base_url = 'https://trello.com/1/{}'
 board_id = 'Bwnvs8UF'
+
+def column_check(column_name):
+    column_id = None
+    column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
+    for column in column_data:
+        if column['name'] == column_name:
+            column_id = column['id']
+            return column_id
+        
+def getDublicate(task_name):
+
+    column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
+    dublicate_tasks = []
+    for column in column_data:
+        task_data = requests.get(base_url.format('lists') + '/' + column['id'] + '/cards', params=auth_params).json()
+        for task in task_data:
+            if task_name == task['name']:
+                dublicate_tasks.append(task)
+    return dublicate_tasks
+
+def counterTasks():
+    counter_tasks = {}
+    column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
+    for column in column_data:
+        task_data = requests.get(base_url.format('lists') + '/' + column['id'] + '/cards', params=auth_params).json()
+        counter_tasks[column['id']] = len(task_data)
+    return counter_tasks
 
 #Создание новой колонки
 def createColumn(new_colomn_name):
