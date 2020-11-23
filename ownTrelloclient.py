@@ -53,7 +53,7 @@ def read():
 def createCard(name, column_name):      
     column_id = column_check(column_name)
     if column_id is None:
-        column_id = create_column(column_name)['id']
+        column_id = createColumn(column_name)['id']
     requests.post(base_url.format('cards'), data={'name': name, 'idList': column_id, **auth_params})
 
 #Создание колонки
