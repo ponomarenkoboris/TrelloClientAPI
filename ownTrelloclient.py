@@ -3,12 +3,12 @@ import sys
 import requests
 
 auth_params = {
-    'key': 'your_key',
-    'token': 'yor_token'
+    'key': 'd85df1f9b2cf5270e14c26546bb86e08',
+    'token': 'f4d461a88735a8125321e99a7d09e8969fb3ce4173a09d63842f5a80931356c1'
 }
 
 base_url = 'https://trello.com/1/{}'
-board_id = 'your_board-id'
+board_id = 'Bwnvs8UF'
 
 #Создание новой колонки
 def createColumn(new_colomn_name):
@@ -32,12 +32,16 @@ def read():
         for task in task_data:
             print('\t' + task['name'])
 
+
 #Создание карточки
 def createCard(name, column_name):
     column_data = requests.get(base_url.format('boards') + '/' + board_id + '/lists', params=auth_params).json()
     for column in column_data:
         if column['name'] == column_name:
+            print(column)
             requests.post(base_url.format('cards'), data={'name':name, 'idList':column['id'], **auth_params})
+
+
 
 #Премещение карточки
 def move(name, column_name):
@@ -59,7 +63,6 @@ def move(name, column_name):
             break
 
 
-
 if __name__ == "__main__":
     if len(sys.argv) <= 2:
         read()
@@ -69,3 +72,4 @@ if __name__ == "__main__":
          move(sys.argv[2], sys.argv[3])
     elif sys.argv[1] == 'createColumn':
         createColumn(sys.argv[2])
+
